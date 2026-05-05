@@ -1,0 +1,12 @@
+version: '3.9'
+services:
+  contractclaw:
+    image: node:24-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./workspace/registry:/app/workspace/registry
+    env_file:
+      - .env
+    command: sh -c "npm install -g openclaw@latest && openclaw start"
+    restart: unless-stopped

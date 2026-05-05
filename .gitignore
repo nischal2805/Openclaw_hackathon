@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+workspace/registry/
+!workspace/registry/.gitkeep
+workspace/logs/
+*.log

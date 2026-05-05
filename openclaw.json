@@ -1,0 +1,24 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "./workspace",
+      "model": "anthropic/claude-sonnet-4-20250514",
+      "heartbeat": {
+        "enabled": true,
+        "cron": "0 8 * * *",
+        "timezone": "Asia/Kolkata"
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "token": "${TELEGRAM_BOT_TOKEN}",
+      "allowFrom": ["${TELEGRAM_CHAT_ID}"]
+    }
+  },
+  "skills": {
+    "load": {
+      "extraDirs": ["./workspace/skills"]
+    }
+  }
+}
