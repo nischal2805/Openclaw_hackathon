@@ -3,9 +3,10 @@
 ### *Your vigilant contract sentinel. Never miss a deadline.*
 
 [![Built with OpenClaw](https://img.shields.io/badge/Built%20with-OpenClaw-blueviolet)](https://github.com/openclaw/openclaw)
-[![Model](https://img.shields.io/badge/Model-Claude%20Sonnet%204-blue)](https://anthropic.com)
+[![LLM](https://img.shields.io/badge/LLM-Anthropic%20%7C%20Gemini%20%7C%20Bedrock-blue)](https://anthropic.com)
 [![Channel](https://img.shields.io/badge/Channel-Telegram-2CA5E0)](https://telegram.org)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-31%20passing-brightgreen)]()
 
 ---
 
@@ -13,7 +14,7 @@
 
 Businesses lose thousands — sometimes millions — every year to missed contract deadlines: silent auto-renewals that lock in another year of a vendor you wanted to leave, SLA review windows that quietly expire, payment milestones that slip past unnoticed. ContractClaw eliminates that risk entirely.
 
-Upload any vendor, service, or employment contract as a PDF or DOCX directly into Telegram. ContractClaw's AI engine (Claude Sonnet) reads the full document, extracts every single obligation — renewal clauses, termination notice periods, payment schedules, audit requirements, liability caps — and stores them in a private local YAML registry. From that moment on, you receive proactive Telegram alerts at exactly 30 days, 7 days, and 1 day before each deadline, plus an immediate flag the moment anything goes overdue.
+Upload any vendor, service, or employment contract as a PDF or DOCX directly into Telegram. ContractClaw's AI engine reads the full document, extracts every single obligation — renewal clauses, termination notice periods, payment schedules, audit requirements, liability caps — and stores them in a private local YAML registry. From that moment on, you receive proactive Telegram alerts at exactly 30 days, 7 days, and 1 day before each deadline, plus an immediate flag the moment anything goes overdue.
 
 No dashboard to log into. No spreadsheet to maintain. No deadline gets missed.
 
@@ -22,82 +23,89 @@ No dashboard to log into. No spreadsheet to maintain. No deadline gets missed.
 ## Architecture
 
 ```
-┌─────────────┐     file upload      ┌───────────────────────────────────────────────────────────┐
-│             │ ──────────────────►  │                    OpenClaw Agent Runtime                  │
-│  Telegram   │                      │                                                             │
-│    User     │                      │  ┌──────────┐   ┌──────────┐   ┌────────────────────────┐  │
-│             │ ◄────────────────── │  │ ingest   │──►│ extract  │──►│      registry.ts       │  │
-└─────────────┘   alert / confirm    │  │   .ts    │   │   .ts    │   │   (YAML · local disk)  │  │
-                                     │  │          │   │          │   └────────────┬───────────┘  │
-                                     │  │ pdf-parse│   │  Claude  │                │               │
-                                     │  │ mammoth  │   │  Sonnet  │                ▼               │
-                                     │  └──────────┘   └──────────┘   ┌────────────────────────┐  │
-                                     │                                  │       alert.ts         │  │
-                                     │  ┌──────────┐   ┌──────────┐   │  ADVISORY / WARNING /  │  │
-                                     │  │ query.ts │   │  risk.ts │   │  URGENT / OVERDUE      │  │
-                                     │  │  (NL Q&A)│   │ (flags)  │   └────────────┬───────────┘  │
-                                     │  └──────────┘   └──────────┘                │               │
-                                     │                                              │               │
-                                     │  ┌──────────────────────────────────────┐   │               │
-                                     │  │  HEARTBEAT.md  (cron · 08:00 IST)   │───┘               │
-                                     │  └──────────────────────────────────────┘                   │
-                                     └───────────────────────────────────────────────────────────┘
-                                                                │
-                                                                ▼
-                                                        ┌─────────────┐
-                                                        │  Telegram   │
-                                                        │    Alert    │
-                                                        └─────────────┘
+┌─────────────┐    file upload     ┌──────────────────────────────────────────────────────────────┐
+│             │ ─────────────────► │                   OpenClaw Agent Runtime                     │
+│  Telegram   │                    │                                                              │
+│    User     │                    │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐  │
+│             │ ◄───────────────── │  │ ingest   │─►│ extract  │─►│  risk    │─►│ registry   │  │
+└─────────────┘  alert / confirm   │  │   .ts    │  │   .ts    │  │   .ts    │  │    .ts     │  │
+                                   │  │          │  │          │  │          │  │            │  │
+                                   │  │pdf-parse │  │  llm.ts  │  │  flags   │  │ YAML disk  │  │
+                                   │  │mammoth   │  │  ───────►│  │          │  └─────┬──────┘  │
+                                   │  └──────────┘  │Anthropic │  └──────────┘        │         │
+                                   │                │ Gemini   │                       ▼         │
+                                   │                │ Bedrock/ │  ┌──────────┐  ┌────────────┐  │
+                                   │                │MiniMax   │  │ query.ts │  │  alert.ts  │  │
+                                   │                └──────────┘  │ (NL Q&A) │  │ ADVISORY/  │  │
+                                   │                              └──────────┘  │ WARNING/   │  │
+                                   │  ┌────────────────────────────────────┐   │ URGENT/    │  │
+                                   │  │  HEARTBEAT.md (cron · 08:00 IST)  │──►│ OVERDUE    │  │
+                                   │  └────────────────────────────────────┘   └─────┬──────┘  │
+                                   └──────────────────────────────────────────────────┼─────────┘
+                                                                                      │
+                                                                                      ▼
+                                                                               ┌─────────────┐
+                                                                               │  Telegram   │
+                                                                               │    Alert    │
+                                                                               └─────────────┘
 ```
 
-**Pipeline summary:**
+**Pipeline (each contract upload):**
 
-1. User sends a contract file via Telegram
-2. `ingest.ts` extracts raw text (PDF via `pdf-parse`, DOCX via `mammoth`)
-3. `extract.ts` calls Claude Sonnet with a strict JSON extraction prompt
-4. `registry.ts` serialises the result to YAML in `workspace/registry/`
-5. `alert.ts` sends a structured confirmation back to Telegram
-6. `HEARTBEAT.md` runs every morning at 08:00 IST, checks all registered deadlines, and dispatches tiered alerts
+1. `ingest.ts` — extract raw text from PDF (`pdf-parse`) or DOCX (`mammoth`); validate size/type
+2. `extract.ts` — call LLM with strict JSON extraction prompt via `llm.ts`
+3. `validate.ts` — validate and coerce the manifest; collect all field errors before throwing
+4. `risk.ts` — programmatic risk analysis; merge flags into manifest
+5. `registry.ts` — serialise to YAML at `workspace/registry/<contract_id>.yaml`
+6. `diff.ts` — if contract ID already exists, compute added/removed obligations and changed deadlines
+7. `alert.ts` + `telegram.ts` — send structured confirmation back to user
+8. `heartbeat.ts` — runs daily at 08:00 IST; evaluates all deadlines, deduplicates, dispatches tiered alerts
 
 ---
 
 ## Features
 
-- 📄 **PDF & DOCX ingestion** — upload any contract directly to Telegram; automatic text extraction with file-size and MIME-type validation (max 10 MB)
-- 🤖 **AI-powered obligation extraction** — Claude Sonnet reads the full contract text and returns a structured JSON manifest: parties, dates, every obligation type, and risk clauses — nothing buried in the fine print is skipped
-- 📁 **Local YAML registry** — all extracted data lives on your machine in `workspace/registry/`; no contract text is stored in any cloud database
-- 🔔 **Tiered proactive alerts** — automatic Telegram notifications at exactly 30 days (Advisory), 7 days (Warning), and 1 day (Urgent) before each deadline; overdue obligations are flagged immediately
-- 🔍 **Natural language queries** — ask "which contracts renew next month?" or "what are my payment obligations for CloudVault?" and get a direct answer drawn from the live registry
-- 🔄 **Version diffing on re-upload** — upload an amended contract and receive a clear diff report: added obligations, removed obligations, changed deadlines, and new risk flags
-- ⚠️ **Risk flag analysis** — auto-renewal windows shorter than 30 days (HIGH), asymmetric penalty clauses (MEDIUM), unlimited liability exposure (HIGH), and out-of-jurisdiction governing law are all surfaced at ingestion time
-- 🏃 **Daily heartbeat at 08:00 IST** — OpenClaw's built-in cron daemon evaluates every registered obligation each morning and sends a daily digest of everything due in the next 30 days; duplicate alerts on the same day are suppressed
+- **PDF & DOCX ingestion** — upload directly to Telegram; automatic text extraction with file-size and MIME-type validation (max 10 MB)
+- **Multi-provider LLM** — choose Anthropic Claude, Google Gemini, or AWS Bedrock (MiniMax M2.5) via a single `LLM_PROVIDER` env var; reasoning-model response parsing included
+- **AI-powered obligation extraction** — structured JSON manifest: parties, dates, every obligation type, risk clauses; nothing in the fine print is skipped
+- **Local YAML registry** — all extracted data lives on your machine in `workspace/registry/`; no contract text stored in any cloud database
+- **Tiered proactive alerts** — Telegram notifications at 30 days (Advisory), 7 days (Warning), 1 day (Urgent), and immediately on overdue
+- **Natural language queries** — ask "which contracts renew next month?" and get a direct answer from the live registry
+- **Version diffing on re-upload** — upload an amended contract and receive a clear diff: added obligations, removed obligations, changed deadlines, new risk flags
+- **Risk flag analysis** — auto-renewal windows < 30 days (HIGH), asymmetric penalties (MEDIUM), unlimited liability (HIGH), out-of-jurisdiction governing law all surfaced at ingestion
+- **Daily heartbeat at 08:00 IST** — cron daemon evaluates every registered obligation each morning, sends daily digest of everything due in next 30 days; duplicate alerts on same day suppressed
+- **Full TypeScript** — strict mode, ES modules, 31 passing tests
 
 ---
 
 ## Quick Start
 
-### Option A — Docker (Recommended)
-
-**Prerequisites:** Docker, a Telegram bot token, and an Anthropic API key.
+### Option A — Local (Node 20+)
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/contractclaw.git
-cd contractclaw
+# 1. Install OpenClaw globally
+npm install -g openclaw@latest
 
-# 2. Copy the environment template
-cp .env.example .env
-
-# 3. Fill in your credentials
-#    Open .env and set:
-#      ANTHROPIC_API_KEY=sk-ant-...
-#      TELEGRAM_BOT_TOKEN=123456:ABC-...
-#      TELEGRAM_CHAT_ID=your_chat_id
-
-# 4. Install Node dependencies (optional — Docker handles this too)
+# 2. Clone and install
+git clone https://github.com/nischal2805/Openclaw_hackathon.git
+cd Openclaw_hackathon
 npm install
 
-# 5. Start the agent
+# 3. Configure environment
+cp .env.example .env
+# Edit .env — set at minimum: LLM_PROVIDER, your chosen API key, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+# 4. Start the agent
+npm start
+```
+
+### Option B — Docker
+
+```bash
+git clone https://github.com/nischal2805/Openclaw_hackathon.git
+cd Openclaw_hackathon
+cp .env.example .env
+# Edit .env with your credentials
 docker-compose up
 ```
 
@@ -110,32 +118,25 @@ The agent is ready when you see:
 
 Send any PDF or DOCX contract to your Telegram bot to begin.
 
-### Option B — Local (Node 20+)
-
-```bash
-# Prerequisites: Node.js 20+, npm, openclaw installed globally
-npm install -g openclaw@latest
-
-git clone https://github.com/your-org/contractclaw.git
-cd contractclaw
-cp .env.example .env
-# Edit .env with your credentials
-
-npm install
-npm run start:local
-```
-
 ---
 
-## Getting Your Credentials
+## LLM Provider Selection
 
-| Credential | Where to get |
-|---|---|
-| `ANTHROPIC_API_KEY` | console.anthropic.com → Settings → API Keys |
-| `TELEGRAM_BOT_TOKEN` | Message @BotFather on Telegram → /newbot |
-| `TELEGRAM_CHAT_ID` | Message @userinfobot on Telegram |
-| `GEMINI_API_KEY` | aistudio.google.com/app/apikey |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS Console → IAM → Users → Security credentials (attach AmazonBedrockFullAccess policy) |
+Set `LLM_PROVIDER` in `.env` to choose your AI backend:
+
+| `LLM_PROVIDER` | Model used | Required env vars |
+|---|---|---|
+| `anthropic` (default) | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` |
+| `gemini` | `gemini-1.5-pro` | `GEMINI_API_KEY` |
+| `bedrock` | `minimax.minimax-m2.5` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
+
+Override specific models with `ANTHROPIC_MODEL`, `GEMINI_MODEL`, or `BEDROCK_MODEL_ID`.
+
+**Testing Bedrock connectivity:**
+
+```bash
+node --env-file=.env test-bedrock.mjs
+```
 
 ---
 
@@ -143,19 +144,37 @@ npm run start:local
 
 | Variable | Required | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Yes | Your Anthropic API key (`sk-ant-...`) |
-| `TELEGRAM_BOT_TOKEN` | Yes | Bot token from [@BotFather](https://t.me/BotFather) |
-| `TELEGRAM_CHAT_ID` | Yes | Your Telegram chat/user ID (authorised sender) |
-| `ALERT_RECIPIENTS` | No | Comma-separated chat IDs for alert broadcasts |
-| `OPENCLAW_WORKSPACE` | No | Path to workspace directory (default: `./workspace`) |
+| `LLM_PROVIDER` | No | `anthropic` \| `gemini` \| `bedrock` (default: `anthropic`) |
+| `ANTHROPIC_API_KEY` | If provider=anthropic | `sk-ant-...` from [console.anthropic.com](https://console.anthropic.com/settings/api-keys) |
+| `ANTHROPIC_MODEL` | No | Override Anthropic model (default: `claude-sonnet-4-20250514`) |
+| `GEMINI_API_KEY` | If provider=gemini | From [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) |
+| `GEMINI_MODEL` | No | Override Gemini model (default: `gemini-1.5-pro`) |
+| `AWS_ACCESS_KEY_ID` | If provider=bedrock | IAM user with `AmazonBedrockFullAccess` |
+| `AWS_SECRET_ACCESS_KEY` | If provider=bedrock | IAM user secret key |
+| `AWS_REGION` | No | Bedrock region (default: `us-east-1`) |
+| `BEDROCK_MODEL_ID` | No | Override Bedrock model (default: `minimax.minimax-m2.5`) |
+| `TELEGRAM_BOT_TOKEN` | Yes | From [@BotFather](https://t.me/BotFather) → `/newbot` |
+| `TELEGRAM_CHAT_ID` | Yes | Your chat ID from [@userinfobot](https://t.me/userinfobot) |
+| `ALERT_RECIPIENTS` | No | Comma-separated chat IDs for broadcast alerts |
+| `OPENCLAW_WORKSPACE` | No | Workspace path (default: `./workspace`) |
 
-All secrets are read exclusively from environment variables. Nothing is hardcoded.
+All secrets read exclusively from environment variables. Nothing hardcoded.
+
+---
+
+## Getting Your Credentials
+
+| Credential | How to get |
+|---|---|
+| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) → Settings → API Keys |
+| `GEMINI_API_KEY` | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS Console → IAM → Users → Security credentials → attach `AmazonBedrockFullAccess` policy. Enable MiniMax M2.5 in AWS Console → Bedrock → Model access. |
+| `TELEGRAM_BOT_TOKEN` | Message [@BotFather](https://t.me/BotFather) on Telegram → `/newbot` |
+| `TELEGRAM_CHAT_ID` | Message [@userinfobot](https://t.me/userinfobot) on Telegram |
 
 ---
 
 ## Example Interaction
-
-Below is a mock Telegram conversation showing the complete flow from upload to alert.
 
 ```
 ─────────────────────────────────────────────
@@ -235,9 +254,7 @@ Below is a mock Telegram conversation showing the complete flow from upload to a
 
 ---
 
-## Alert Examples
-
-All four alert tiers sent by `alert.ts`:
+## Alert Tiers
 
 ### 📋 Advisory — 30 days before deadline
 
@@ -269,7 +286,6 @@ Action:        Immediate action required. Confirm notice has been served
 ```
 🚨 URGENT — ACTION REQUIRED TOMORROW
 Contract:      cloudvault-saas-2025-01
-Counterparty:  CloudVault Technologies
 Obligation:    Annual auto-renewal — serves notice by 2025-12-15
 Deadline:      2025-12-15
 Days remaining: 1
@@ -277,40 +293,34 @@ Action:        Final notice. Serve termination notice today or the
                contract will auto-renew for another 12 months.
 ```
 
-### ❌ Overdue — deadline passed without resolution
+### ❌ Overdue
 
 ```
 ❌ OVERDUE OBLIGATION
 Contract:      cloudvault-saas-2025-01
-Counterparty:  CloudVault Technologies
 Obligation:    Q1 SLA review meeting must be held
 Was due:       2025-04-01
-Action required immediately. Mark as resolved once completed or
-escalate to contract manager.
+Action required immediately.
 ```
 
 ---
 
 ## Security & Data Privacy
 
-ContractClaw is designed around a local-first, privacy-preserving architecture.
-
 | What | Where it lives | Leaves the machine? |
 |---|---|---|
-| Raw contract text | Extracted in memory only, never logged | Only sent to Anthropic API for obligation extraction |
+| Raw contract text | Memory only, never logged or written to disk | Sent to your chosen LLM API for extraction only |
 | Extracted obligations | `workspace/registry/*.yaml` on local disk | No |
-| Risk flags | `workspace/registry/*.yaml` on local disk | No |
-| Alert logs | Embedded in YAML per-obligation | No |
+| Risk flags | Embedded in YAML registry | No |
+| Alert logs | Per-obligation in YAML | No |
 | API keys | Environment variables only | No |
+| Error logs | `workspace/logs/error.log` — sensitive fields stripped | No |
 
-**Commitments:**
-
-- `workspace/registry/` is `.gitignore`d — obligation data is never committed to version control
-- `ANTHROPIC_API_KEY` and `TELEGRAM_BOT_TOKEN` are read exclusively from environment variables; they are never hardcoded or logged
-- File uploads are validated before processing: maximum 10 MB, PDF and DOCX MIME types only
-- The `allowFrom` list in `openclaw.json` gates which Telegram chat IDs can submit contracts — the bot ignores messages from any other source
-- Raw contract text is never written to disk or logged in any form; it passes through memory from `ingest.ts` to `extract.ts` and is then discarded
-- Only the structured obligation JSON extracted by Claude Sonnet is persisted
+- `workspace/registry/` is `.gitignore`d — contract data never committed
+- API keys and bot tokens read exclusively from environment variables; never hardcoded or logged
+- File uploads validated before processing: max 10 MB, PDF/DOCX only
+- `allowFrom` in `openclaw.json` gates which Telegram chat IDs can submit contracts
+- Raw contract text stripped from all error log context before writing
 
 ---
 
@@ -318,15 +328,19 @@ ContractClaw is designed around a local-first, privacy-preserving architecture.
 
 | Layer | Technology |
 |---|---|
-| Agent Framework | [OpenClaw](https://github.com/openclaw/openclaw) (latest, Node 24+) |
-| LLM Backend | Anthropic Claude Sonnet (`claude-sonnet-4-20250514`) |
-| Primary Channel | Telegram Bot |
+| Agent Framework | [OpenClaw](https://github.com/openclaw/openclaw) (Node 20+) |
+| LLM — Anthropic | `@anthropic-ai/sdk` · `claude-sonnet-4-20250514` |
+| LLM — Google | `@google/generative-ai` · `gemini-1.5-pro` |
+| LLM — AWS Bedrock | `@aws-sdk/client-bedrock-runtime` · MiniMax M2.5 (ConverseCommand) |
+| Telegram Channel | Native `fetch` with retry + exponential backoff |
 | PDF Parsing | `pdf-parse` |
 | DOCX Parsing | `mammoth` |
 | Obligation Registry | YAML files (`js-yaml`) in `workspace/registry/` |
+| Manifest Validation | Custom `validate.ts` — collects all errors before throwing |
 | Scheduling | OpenClaw HEARTBEAT.md daemon (cron `0 8 * * *`, Asia/Kolkata) |
-| Runtime | Node.js 24+ / TypeScript (strict mode, ES modules) |
-| Containerisation | Docker Compose |
+| Runtime | Node.js 20+ / TypeScript 5 (strict, ES modules, NodeNext) |
+| Tests | Vitest 4 — 31 tests across diff, risk, validate modules |
+| Containerisation | Docker Compose (optional) |
 
 ---
 
@@ -335,26 +349,34 @@ ContractClaw is designed around a local-first, privacy-preserving architecture.
 ```
 contractclaw/
 ├── workspace/
-│   ├── SOUL.md              # Agent persona and tone
-│   ├── AGENTS.md            # Operating instructions + contract memory
-│   ├── IDENTITY.md          # Agent name, emoji, tagline
-│   ├── HEARTBEAT.md         # Daily deadline scheduler instructions
-│   ├── SKILLS.md            # Skill loader manifest
-│   └── skills/
-│       └── contractclaw/
-│           ├── SKILL.md     # Skill definition (trigger phrases, pipeline)
-│           ├── ingest.ts    # Document ingestion + text extraction
-│           ├── extract.ts   # Claude API obligation extraction
-│           ├── registry.ts  # YAML registry read/write
-│           ├── alert.ts     # Tiered alert formatting + dispatch
-│           ├── diff.ts      # Contract version diffing
-│           ├── query.ts     # Natural language query handler
-│           └── risk.ts      # Clause risk flagging
+│   ├── SOUL.md                  # Agent persona and tone
+│   ├── AGENTS.md                # Operating instructions + contract memory
+│   ├── IDENTITY.md              # Agent name, emoji, tagline
+│   ├── HEARTBEAT.md             # Daily deadline scheduler
+│   ├── SKILLS.md                # Skill loader manifest
+│   └── skills/contractclaw/
+│       ├── SKILL.md             # Skill definition (trigger phrases, pipeline)
+│       ├── llm.ts               # Multi-provider LLM abstraction
+│       ├── ingest.ts            # Document ingestion + text extraction
+│       ├── extract.ts           # Obligation extraction via LLM
+│       ├── validate.ts          # Manifest validation + coercion
+│       ├── registry.ts          # YAML registry read/write
+│       ├── alert.ts             # Tiered alert formatting
+│       ├── diff.ts              # Contract version diffing
+│       ├── query.ts             # Natural language query handler
+│       ├── risk.ts              # Clause risk flagging
+│       ├── telegram.ts          # Telegram API client (retry, broadcast)
+│       ├── heartbeat.ts         # Daily deadline checker
+│       ├── logger.ts            # Structured error/info logger
+│       └── pipeline.ts          # Main orchestrator
 ├── src/
-│   └── types/
-│       ├── obligation.ts    # TypeScript obligation schema types
-│       └── registry.ts      # Registry schema types
-├── openclaw.json            # OpenClaw gateway configuration
+│   ├── types/obligation.ts      # TypeScript obligation schema types
+│   └── tests/
+│       ├── diff.test.ts
+│       ├── risk.test.ts
+│       └── validate.test.ts
+├── test-bedrock.mjs             # Quick Bedrock connectivity test
+├── openclaw.json                # OpenClaw + ContractClaw configuration
 ├── docker-compose.yml
 ├── package.json
 ├── tsconfig.json
@@ -363,31 +385,46 @@ contractclaw/
 
 ---
 
-## Definition of Done
+## Running Tests
 
-- [ ] PDF upload → obligation extraction → YAML saved correctly
-- [ ] DOCX upload → obligation extraction → YAML saved correctly
-- [ ] HEARTBEAT.md fires and produces correct alerts for a contract with a deadline 30 / 7 / 1 days away
-- [ ] Natural language query returns accurate results from registry
-- [ ] Re-upload of amended contract produces a diff report
-- [ ] Risk flags are correctly identified for auto-renewal with short notice window
-- [ ] Overdue obligation triggers OVERDUE alert (not just standard tiers)
-- [ ] File > 10 MB is rejected with a clear Telegram message
-- [ ] Non-PDF / DOCX file is rejected with a clear Telegram message
-- [ ] `docker-compose up` starts the agent successfully
+```bash
+npm test                  # run all 31 tests
+npm run test:coverage     # with coverage report
+npm run typecheck         # TypeScript strict check (0 errors)
+```
+
+---
+
+## Do You Need a Frontend?
+
+**Short answer: No — Telegram is the frontend.**
+
+Telegram already gives you:
+- File upload interface (PDF/DOCX drag-and-drop)
+- Rich formatted messages (obligation summaries, risk flags, alerts)
+- Push notifications for every alert tier
+- Natural language query interface
+
+A separate web dashboard makes sense only if you need:
+- Multi-user access (team members viewing the same registry)
+- Visual timeline / Gantt of obligations across contracts
+- Bulk import / export of contracts
+- Role-based access (legal team, finance, management views)
+
+For a single user or small team, Telegram covers everything. If you extend later, the YAML registry is already structured data — a read API on top is trivial.
 
 ---
 
 ## Contributing
 
-This is a hackathon project. If you find it useful and want to extend it, open an issue or PR. Key areas for improvement:
+Open an issue or PR. Key areas for improvement:
 
-- Support for additional file types (scanned PDFs via OCR, HTML contracts)
-- Multi-user / multi-tenant registry isolation
-- Web dashboard for obligation visualisation
+- OCR support for scanned PDFs
+- Multi-tenant registry isolation
 - Email and Slack alert channels alongside Telegram
-- Clause-level confidence scoring and human-in-the-loop confirmation flow
+- Web dashboard for obligation visualisation (see above)
+- Clause-level confidence scoring + human-in-the-loop confirmation
 
 ---
 
-*Built with [OpenClaw](https://github.com/openclaw/openclaw) and [Claude Sonnet](https://anthropic.com) at a hackathon. Contract data never leaves your machine.*
+*Built with [OpenClaw](https://github.com/openclaw/openclaw) at a hackathon. Contract data never leaves your machine.*
