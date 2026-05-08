@@ -2,11 +2,9 @@
   "agents": {
     "defaults": {
       "workspace": "./workspace",
-      "model": "anthropic/claude-sonnet-4-20250514",
+      "model": "amazon-bedrock/minimax.minimax-m2.5",
       "heartbeat": {
-        "enabled": true,
-        "cron": "0 8 * * *",
-        "timezone": "Asia/Kolkata"
+        "every": "0 8 * * *"
       }
     }
   },
@@ -19,36 +17,6 @@
   "skills": {
     "load": {
       "extraDirs": ["./workspace/skills"]
-    }
-  },
-  "contractclaw": {
-    "llm": {
-      "provider": "${LLM_PROVIDER}",
-      "models": {
-        "anthropic": "${ANTHROPIC_MODEL}",
-        "gemini": "${GEMINI_MODEL}",
-        "bedrock": "${BEDROCK_MODEL_ID}"
-      },
-      "extraction": {
-        "maxTokens": 4096,
-        "temperature": 0
-      },
-      "query": {
-        "maxTokens": 1024,
-        "temperature": 0.3
-      }
-    },
-    "alerts": {
-      "thresholds": [30, 7, 1],
-      "timezone": "Asia/Kolkata",
-      "digestTime": "08:00"
-    },
-    "registry": {
-      "dir": "./workspace/registry"
-    },
-    "upload": {
-      "maxSizeMb": 10,
-      "allowedTypes": ["pdf", "docx"]
     }
   }
 }
