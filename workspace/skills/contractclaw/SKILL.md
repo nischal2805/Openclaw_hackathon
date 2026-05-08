@@ -18,6 +18,12 @@ The agent MUST invoke this skill when ANY of the following conditions are true:
 | Condition | Type |
 |---|---|
 | User sends a message with a file attachment (`.pdf` or `.docx`) | File upload |
+| Message text is `/start` | Slash command — greeting |
+| Message text is `/help` or exactly "help" | Slash command — help |
+| Message text is `/list` | Slash command — list contracts |
+| Message text is `/status` | Slash command — upcoming obligations |
+| Message text is `/digest` | Slash command — trigger daily digest now |
+| Message text starts with `/query ` | Slash command — NL query with explicit prefix |
 | Message text contains "upload contract" | NL command |
 | Message text contains "add contract" | NL command |
 | Message text contains "register contract" | NL command |
@@ -28,11 +34,32 @@ The agent MUST invoke this skill when ANY of the following conditions are true:
 | Message text contains "show obligations" | NL query |
 | Message text contains "check contracts" | NL query |
 | Message text contains "contract status" | NL query |
-| Message text is exactly "help" | Help command |
 | HEARTBEAT.md daemon fires (daily cron, 08:00 IST) | Scheduled check |
 
 Matching is case-insensitive. If the message contains both a file and a text command,
 treat it as a file upload and ignore the text command.
+
+### Slash Command Behaviour
+
+| Command | Action |
+|---|---|
+| `/start` | Send greeting: agent name, what it does, how to upload a contract |
+| `/help` | Send command list + supported file types + example queries |
+| `/list` | Call `loadAllContracts()` → format summary table of all registered contracts |
+| `/status` | Call `runHeartbeat` in dry-run mode → list all obligations due in next 30 days |
+| `/digest` | Trigger a full heartbeat run immediately (same as scheduled run) |
+| `/query <text>` | Strip `/query ` prefix → pass remainder to `queryRegistry()` |
+
+Route all slash commands through:
+
+```typescript
+import { handleSlashCommand, isSlashCommand } from './commands.js';
+
+if (isSlashCommand(messageText)) {
+  await handleSlashCommand(messageText, chatId);
+  return;
+}
+```
 
 ---
 
