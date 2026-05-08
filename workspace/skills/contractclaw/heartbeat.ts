@@ -39,62 +39,62 @@ export async function runHeartbeat(chatIds: string[]): Promise<void> {
       contractsChecked++;
       try {
         for (const obligation of manifest.obligations) {
-        // Skip resolved obligations
-        if (obligation.resolved === true) continue;
+          // Skip resolved obligations
+          if (obligation.resolved === true) continue;
 
-        // Skip obligations without a deadline
-        if (obligation.deadline === null) continue;
+          // Skip obligations without a deadline
+          if (obligation.deadline === null) continue;
 
-        // Compute days remaining using plain Date math
-        const deadline = new Date(obligation.deadline);
-        deadline.setHours(0, 0, 0, 0);
-        const daysRemaining = Math.round((deadline.getTime() - today.getTime()) / 86400000);
+          // Compute days remaining using plain Date math
+          const deadline = new Date(obligation.deadline);
+          deadline.setHours(0, 0, 0, 0);
+          const daysRemaining = Math.round((deadline.getTime() - today.getTime()) / 86400000);
 
-        // Determine alert tier; skip if not a threshold day
-        const tier = determineAlertTier(daysRemaining);
-        if (tier === null) {
-          // Not a threshold day — still collect for digest if within 30 days
+          // Determine alert tier; skip if not a threshold day
+          const tier = determineAlertTier(daysRemaining);
+          if (tier === null) {
+            // Not a threshold day — still collect for digest if within 30 days
+            if (daysRemaining >= 0 && daysRemaining <= 30) {
+              // Use nearest future tier for digest labelling, or ADVISORY as default
+              const digestTier: AlertTier =
+                daysRemaining <= 1 ? 'URGENT' : daysRemaining <= 7 ? 'WARNING' : 'ADVISORY';
+              upcomingObligations.push({
+                contractId: manifest.contract_id,
+                counterparty: manifest.parties.counterparty,
+                obligation,
+                daysRemaining,
+                alertTier: digestTier,
+              });
+            }
+            continue;
+          }
+
+          // Check for duplicate alert on this tier today
+          if (hasSentTodayForTier(obligation.alert_log, tier)) continue;
+
+          // Format and broadcast the alert
+          const alertText = formatAlert(tier, manifest, obligation);
+          await broadcastMessage(chatIds, alertText);
+          alertsSent++;
+
+          // Append to obligation's alert_log
+          await updateObligation(manifest.contract_id, obligation.id, {
+            alert_log: [
+              ...obligation.alert_log,
+              { tier, sent_at: new Date().toISOString() },
+            ],
+          });
+
+          // Include in digest as well (threshold day is still upcoming or overdue)
           if (daysRemaining >= 0 && daysRemaining <= 30) {
-            // Use nearest future tier for digest labelling, or ADVISORY as default
-            const digestTier: AlertTier =
-              daysRemaining <= 1 ? 'URGENT' : daysRemaining <= 7 ? 'WARNING' : 'ADVISORY';
             upcomingObligations.push({
               contractId: manifest.contract_id,
               counterparty: manifest.parties.counterparty,
               obligation,
               daysRemaining,
-              alertTier: digestTier,
+              alertTier: tier,
             });
           }
-          continue;
-        }
-
-        // Check for duplicate alert on this tier today
-        if (hasSentTodayForTier(obligation.alert_log, tier)) continue;
-
-        // Format and broadcast the alert
-        const alertText = formatAlert(tier, manifest, obligation);
-        await broadcastMessage(chatIds, alertText);
-        alertsSent++;
-
-        // Append to obligation's alert_log
-        await updateObligation(manifest.contract_id, obligation.id, {
-          alert_log: [
-            ...obligation.alert_log,
-            { tier, sent_at: new Date().toISOString() },
-          ],
-        });
-
-        // Include in digest as well (threshold day is still upcoming or overdue)
-        if (daysRemaining >= 0 && daysRemaining <= 30) {
-          upcomingObligations.push({
-            contractId: manifest.contract_id,
-            counterparty: manifest.parties.counterparty,
-            obligation,
-            daysRemaining,
-            alertTier: tier,
-          });
-        }
         }
       } catch (contractError) {
         await logError(

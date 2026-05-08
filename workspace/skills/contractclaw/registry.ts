@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 import type { ObligationManifest, Obligation } from '../../../src/types/obligation.js';
 import { ContractClawError } from '../../../src/types/obligation.js';
+import { logError } from './logger.js';
 
 const REGISTRY_DIR = fileURLToPath(new URL('../../../workspace/registry/', import.meta.url));
 const AGENTS_MD_PATH = fileURLToPath(new URL('../../../workspace/AGENTS.md', import.meta.url));
@@ -122,8 +123,10 @@ export async function loadAllContracts(): Promise<ObligationManifest[]> {
       const parsed = yaml.load(raw) as ObligationManifest;
       manifests.push(parsed);
     } catch (err) {
-      process.stderr.write(
-        `[Registry] Skipping malformed file ${file}: ${(err as Error).message}\n`,
+      await logError(
+        'REGISTRY_ERROR',
+        `Skipping malformed file ${file}: ${(err as Error).message}`,
+        { filePath }
       );
     }
   }
