@@ -3,6 +3,7 @@ import { loadAllContracts, updateObligation } from './registry.js';
 import { formatAlert, formatDailyDigest } from './alert.js';
 import { broadcastMessage } from './telegram.js';
 import { logInfo, logError } from './logger.js';
+import { loadTodaySentAlerts, persistSentAlerts, makeAlertKey } from './dedup.js';
 
 type AlertTier = 'ADVISORY' | 'WARNING' | 'URGENT' | 'OVERDUE';
 
@@ -23,6 +24,8 @@ function hasSentTodayForTier(alertLog: { tier: string; sent_at: string }[], tier
 
 export async function runHeartbeat(chatIds: string[]): Promise<void> {
   await logInfo('Heartbeat started');
+
+  const sentAlerts = await loadTodaySentAlerts();
 
   let contractsChecked = 0;
   let alertsSent = 0;
@@ -69,8 +72,14 @@ export async function runHeartbeat(chatIds: string[]): Promise<void> {
             continue;
           }
 
-          // Check for duplicate alert on this tier today
-          if (hasSentTodayForTier(obligation.alert_log, tier)) continue;
+          const alertKey = makeAlertKey(manifest.contract_id, obligation.id, tier);
+
+          // Check both state file AND alert_log for dedup
+          if (sentAlerts.has(alertKey) || hasSentTodayForTier(obligation.alert_log, tier)) continue;
+
+          // Write to state file BEFORE sending (crash-safe: missing one alert > duplicate alert)
+          sentAlerts.add(alertKey);
+          await persistSentAlerts(sentAlerts);
 
           // Format and broadcast the alert
           const alertText = formatAlert(tier, manifest, obligation);
