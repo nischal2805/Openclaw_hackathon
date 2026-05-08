@@ -76,6 +76,8 @@ No dashboard to log into. No spreadsheet to maintain. No deadline gets missed.
 
 ## Quick Start
 
+### Option A — Docker (Recommended)
+
 **Prerequisites:** Docker, a Telegram bot token, and an Anthropic API key.
 
 ```bash
@@ -107,6 +109,33 @@ The agent is ready when you see:
 ```
 
 Send any PDF or DOCX contract to your Telegram bot to begin.
+
+### Option B — Local (Node 20+)
+
+```bash
+# Prerequisites: Node.js 20+, npm, openclaw installed globally
+npm install -g openclaw@latest
+
+git clone https://github.com/your-org/contractclaw.git
+cd contractclaw
+cp .env.example .env
+# Edit .env with your credentials
+
+npm install
+npm run start:local
+```
+
+---
+
+## Getting Your Credentials
+
+| Credential | Where to get |
+|---|---|
+| `ANTHROPIC_API_KEY` | console.anthropic.com → Settings → API Keys |
+| `TELEGRAM_BOT_TOKEN` | Message @BotFather on Telegram → /newbot |
+| `TELEGRAM_CHAT_ID` | Message @userinfobot on Telegram |
+| `GEMINI_API_KEY` | aistudio.google.com/app/apikey |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS Console → IAM → Users → Security credentials (attach AmazonBedrockFullAccess policy) |
 
 ---
 

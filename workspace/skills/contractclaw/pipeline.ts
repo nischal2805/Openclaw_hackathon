@@ -1,6 +1,7 @@
 'use strict';
 
 import path from 'path';
+import { unlink } from 'node:fs/promises';
 import { ingestDocument } from './ingest.js';
 import { extractObligations } from './extract.js';
 import { analyseRisk } from './risk.js';
@@ -87,6 +88,7 @@ export async function processContract(filePath: string, chatId: string): Promise
   let manifest: ObligationManifest;
 
   try {
+    // Ensure temp file is always cleaned up after processing
     // Step 1: Ingest document
     const { rawText, fileName: resolvedFileName, fileType } = await ingestDocument(filePath);
 
@@ -178,5 +180,7 @@ export async function processContract(filePath: string, chatId: string): Promise
     }
 
     throw error;
+  } finally {
+    unlink(filePath).catch(() => { /* temp file cleanup — ignore if already gone */ });
   }
 }

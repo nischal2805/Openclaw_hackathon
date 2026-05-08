@@ -1,11 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { ObligationManifest } from '../../../src/types/obligation.js';
 import { ContractClawError } from '../../../src/types/obligation.js';
 import { loadAllContracts } from './registry.js';
-
-const MODEL = 'claude-sonnet-4-20250514';
-const MAX_TOKENS = 1024;
-const TEMPERATURE = 0.3;
+import { callLLM } from './llm.js';
 
 function buildRegistrySummary(manifests: ObligationManifest[]): string {
   if (manifests.length === 0) {
@@ -49,14 +45,6 @@ function buildRegistrySummary(manifests: ObligationManifest[]): string {
 }
 
 export async function queryRegistry(userQuestion: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new ContractClawError(
-      'EXTRACTION_FAILED',
-      'ANTHROPIC_API_KEY is not set in environment variables.'
-    );
-  }
-
   let manifests: ObligationManifest[];
   try {
     manifests = await loadAllContracts();
@@ -69,39 +57,18 @@ export async function queryRegistry(userQuestion: string): Promise<string> {
 
   const summary = buildRegistrySummary(manifests);
 
-  const client = new Anthropic({ apiKey });
+  const systemPrompt =
+    'You are a contract registry assistant. Answer questions about the registered contracts concisely and accurately. Use only the data provided.';
+  const userMessage = `Registry summary:\n${summary}\n\nQuestion: ${userQuestion}`;
 
-  let response: Anthropic.Message;
   try {
-    response = await client.messages.create({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      temperature: TEMPERATURE,
-      system:
-        'You are a contract registry assistant. Answer questions about the registered contracts concisely and accurately. Use only the data provided.',
-      messages: [
-        {
-          role: 'user',
-          content: `Registry summary:\n${summary}\n\nQuestion: ${userQuestion}`,
-        },
-      ],
-    });
+    return await callLLM(systemPrompt, userMessage, { maxTokens: 1024, temperature: 0.3 });
   } catch (err) {
+    if (err instanceof ContractClawError) throw err;
     throw new ContractClawError(
       'EXTRACTION_FAILED',
-      `Claude API request failed: ${(err as Error).message}`,
+      `LLM API request failed: ${(err as Error).message}`,
       { userQuestion }
     );
   }
-
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new ContractClawError(
-      'EXTRACTION_FAILED',
-      'Claude API returned no text content in response.',
-      { userQuestion }
-    );
-  }
-
-  return textBlock.text;
 }
