@@ -37,8 +37,8 @@ export async function runHeartbeat(chatIds: string[]): Promise<void> {
 
     for (const manifest of contracts) {
       contractsChecked++;
-
-      for (const obligation of manifest.obligations) {
+      try {
+        for (const obligation of manifest.obligations) {
         // Skip resolved obligations
         if (obligation.resolved === true) continue;
 
@@ -95,6 +95,13 @@ export async function runHeartbeat(chatIds: string[]): Promise<void> {
             alertTier: tier,
           });
         }
+        }
+      } catch (contractError) {
+        await logError(
+          'HEARTBEAT_CONTRACT_FAILED',
+          `Failed to process contract ${manifest.contract_id}: ${(contractError as Error).message}`,
+          { contractId: manifest.contract_id },
+        );
       }
     }
 

@@ -122,10 +122,8 @@ export async function loadAllContracts(): Promise<ObligationManifest[]> {
       const parsed = yaml.load(raw) as ObligationManifest;
       manifests.push(parsed);
     } catch (err) {
-      throw new ContractClawError(
-        'REGISTRY_ERROR',
-        `Failed to parse registry file ${file}: ${(err as Error).message}`,
-        { filePath }
+      process.stderr.write(
+        `[Registry] Skipping malformed file ${file}: ${(err as Error).message}\n`,
       );
     }
   }
