@@ -99,10 +99,9 @@ async function callBedrock(
   }
 
   const region = process.env['AWS_REGION'] ?? 'us-east-1';
-  const modelId =
-    process.env['BEDROCK_MODEL_ID'] ?? 'us.anthropic.claude-sonnet-4-20250514-v1:0';
+  const modelId = process.env['BEDROCK_MODEL_ID'] ?? 'minimax.minimax-m2.5';
 
-  const { BedrockRuntimeClient, InvokeModelCommand } = await import(
+  const { BedrockRuntimeClient, ConverseCommand } = await import(
     '@aws-sdk/client-bedrock-runtime'
   );
   const client = new BedrockRuntimeClient({
@@ -110,28 +109,38 @@ async function callBedrock(
     credentials: { accessKeyId, secretAccessKey },
   });
 
-  const body = JSON.stringify({
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: options.maxTokens,
-    temperature: options.temperature,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userContent }],
-  });
-
+  // Converse API: model-agnostic — works for Anthropic, MiniMax, Meta, Mistral, etc.
   const response = await client.send(
-    new InvokeModelCommand({
+    new ConverseCommand({
       modelId,
-      body: new TextEncoder().encode(body),
-      contentType: 'application/json',
-      accept: 'application/json',
+      system: [{ text: systemPrompt }],
+      messages: [{ role: 'user', content: [{ text: userContent }] }],
+      inferenceConfig: {
+        maxTokens: options.maxTokens,
+        temperature: options.temperature,
+      },
     }),
   );
 
-  const parsed = JSON.parse(new TextDecoder().decode(response.body)) as {
-    content: Array<{ text: string }>;
-  };
+  const content = response.output?.message?.content ?? [];
 
-  return parsed.content[0].text;
+  // Regular text block (most models)
+  const textBlock = content.find((b: { text?: string }) => typeof b.text === 'string');
+  if (textBlock?.text) return textBlock.text;
+
+  // Reasoning model fallback (MiniMax M2.5, DeepSeek-R1, etc.)
+  const reasoningBlock = content.find(
+    (b: { reasoningContent?: { reasoningText?: { text?: string } } }) =>
+      b.reasoningContent?.reasoningText?.text,
+  );
+  if (reasoningBlock?.reasoningContent?.reasoningText?.text) {
+    return reasoningBlock.reasoningContent.reasoningText.text;
+  }
+
+  throw new ContractClawError(
+    'EXTRACTION_FAILED',
+    'Bedrock Converse API returned no text content in response.',
+  );
 }
 
 export async function callLLM(
