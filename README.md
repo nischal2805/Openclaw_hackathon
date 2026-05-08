@@ -7,6 +7,11 @@
 [![Channel](https://img.shields.io/badge/Channel-Telegram-2CA5E0)](https://telegram.org)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-31%20passing-brightgreen)]()
+[![Demo](https://img.shields.io/badge/Demo-YouTube-red)](https://youtu.be/QpT2LhKakB4)
+
+## 🎬 Demo
+
+[![ContractClaw Demo](https://img.youtube.com/vi/QpT2LhKakB4/maxresdefault.jpg)](https://youtu.be/QpT2LhKakB4)
 
 ---
 
