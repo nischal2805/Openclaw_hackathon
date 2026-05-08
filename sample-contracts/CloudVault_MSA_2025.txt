@@ -1,0 +1,121 @@
+MASTER SERVICE AGREEMENT
+
+This Master Service Agreement ("Agreement") is entered into as of January 15, 2025
+between Acme Technologies Pvt. Ltd., a company incorporated under the laws of
+Maharashtra, India ("Client"), and CloudVault Solutions Ltd., a company incorporated
+under the laws of Karnataka, India ("Service Provider").
+
+1. TERM AND RENEWAL
+
+1.1 This Agreement commences on January 15, 2025 and continues for a period of
+twelve (12) months, expiring on January 14, 2026.
+
+1.2 AUTO-RENEWAL: This Agreement shall automatically renew for successive one-year
+terms unless either party provides written notice of non-renewal at least 30 (thirty)
+days prior to the expiration of the then-current term. Notice must be delivered by
+registered post or email with read receipt.
+
+1.3 Either party may terminate this Agreement for convenience by providing 90 (ninety)
+days' written notice to the other party.
+
+2. PAYMENT TERMS
+
+2.1 The Client shall pay a monthly service fee of INR 85,000 (Rupees Eighty-Five
+Thousand) on the 1st day of each calendar month, beginning February 1, 2025.
+
+2.2 Late payments shall attract interest at 18% per annum, calculated daily.
+
+2.3 All invoices must be raised by the Service Provider on or before the 25th of
+each preceding month. Failure to raise invoice by the 25th shall not relieve the
+Client of payment obligation.
+
+2.4 ANNUAL PRICE REVIEW: Service fees shall be subject to review on January 1, 2026
+with a maximum escalation of 10% per annum. Service Provider must give 60 days
+written notice of any fee change.
+
+3. SERVICE LEVELS
+
+3.1 The Service Provider guarantees 99.5% uptime for all core services, measured
+monthly. Scheduled maintenance windows (maximum 4 hours per month, between
+02:00 and 06:00 IST) are excluded from uptime calculations.
+
+3.2 SLA REVIEW: Service level performance shall be formally reviewed on a quarterly
+basis. First review scheduled for April 1, 2025. Subsequent reviews: July 1, 2025;
+October 1, 2025; January 1, 2026.
+
+3.3 If uptime falls below 99.5% in any calendar month, Client is entitled to a
+service credit of 10% of that month's fee. Credits must be claimed within 15 days
+of month-end. Credits shall not exceed 30% of monthly fees.
+
+4. DATA AND SECURITY
+
+4.1 ANNUAL AUDIT: The Service Provider shall submit to an independent security audit
+once per year, with the first audit to be completed by December 1, 2025. Audit
+reports shall be made available to Client within 7 days of completion.
+
+4.2 The Service Provider shall maintain ISO 27001 certification throughout the term
+of this Agreement. Proof of certification renewal must be provided to Client by
+November 15, 2025.
+
+4.3 In the event of a data breach, the Service Provider shall notify the Client within
+72 hours of discovery. Failure to notify within this window constitutes a material
+breach.
+
+5. LIABILITY
+
+5.1 The Service Provider's total liability under this Agreement shall not exceed
+the total fees paid in the 3 months immediately preceding the event giving rise
+to the claim.
+
+5.2 The Client's liability for any cause of action is uncapped and shall include
+all direct, indirect, incidental and consequential damages.
+
+5.3 INDEMNIFICATION: Client shall indemnify and hold harmless Service Provider from
+any third-party claims arising from Client's use of the services.
+
+6. CONFIDENTIALITY
+
+6.1 Both parties agree to maintain confidentiality of each other's proprietary
+information for a period of 3 years following termination of this Agreement.
+
+7. GOVERNING LAW AND DISPUTES
+
+7.1 This Agreement shall be governed by the laws of the State of Maharashtra, India.
+
+7.2 All disputes shall be subject to the exclusive jurisdiction of the courts at
+Mumbai, Maharashtra.
+
+7.3 Prior to litigation, parties agree to attempt mediation for a period of 30 days.
+
+8. PENALTIES
+
+8.1 If Service Provider fails to meet the 99.5% SLA for 3 consecutive months,
+Client may terminate immediately without penalty.
+
+8.2 If Client terminates before the end of the initial 12-month term without cause,
+Client shall pay an early termination fee equal to 3 months' service fees
+(INR 2,55,000).
+
+9. KEY DATES SUMMARY
+
+- Agreement Start:          January 15, 2025
+- Agreement End:            January 14, 2026
+- Auto-renewal Notice Due:  December 15, 2025 (30 days before expiry)
+- Monthly Payments Due:     1st of each month (Feb 2025 – Jan 2026)
+- Q1 SLA Review:            April 1, 2025
+- Q2 SLA Review:            July 1, 2025
+- Q3 SLA Review:            October 1, 2025
+- Q4 SLA Review / Renewal:  January 1, 2026
+- Security Audit Due:       December 1, 2025
+- ISO Cert Renewal Proof:   November 15, 2025
+- Annual Price Review:      January 1, 2026
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first
+written above.
+
+ACME TECHNOLOGIES PVT. LTD.          CLOUDVAULT SOLUTIONS LTD.
+
+Signed: _____________________         Signed: _____________________
+Name:   Rahul Sharma                  Name:   Priya Menon
+Title:  Chief Executive Officer       Title:  Chief Revenue Officer
+Date:   January 15, 2025             Date:   January 15, 2025

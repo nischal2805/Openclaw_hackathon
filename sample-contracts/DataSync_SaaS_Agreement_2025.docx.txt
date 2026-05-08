@@ -1,0 +1,133 @@
+SOFTWARE AS A SERVICE AGREEMENT
+
+This Software as a Service Agreement ("Agreement") is entered into as of March 1, 2025
+between Nexus Retail Pvt. Ltd., a company incorporated under the laws of Delhi, India
+("Customer"), and DataSync Technologies Inc., a corporation incorporated under the laws
+of Delaware, United States of America ("Provider").
+
+1. SUBSCRIPTION TERM
+
+1.1 This Agreement commences on March 1, 2025 and shall remain in effect for a period
+of twenty-four (24) months, expiring on February 28, 2027.
+
+1.2 AUTO-RENEWAL: Unless either party provides written notice of non-renewal at least
+15 (fifteen) days prior to the end of the then-current subscription term, this Agreement
+shall automatically renew for successive one-year periods at the then-current list price
+plus a standard 12% annual escalation.
+
+1.3 Customer may terminate this Agreement for convenience upon 120 (one hundred and
+twenty) days' written notice. Provider may terminate for convenience upon 30 (thirty)
+days' written notice. Early termination by Customer shall attract a termination fee equal
+to 50% of remaining subscription fees for the unexpired term.
+
+2. SUBSCRIPTION FEES AND BILLING
+
+2.1 Customer shall pay a quarterly subscription fee of USD 12,500 (Twelve Thousand Five
+Hundred US Dollars) in advance, on the first business day of each quarter beginning
+April 1, 2025.
+
+2.2 Invoices not paid within 15 days of due date shall attract a late payment fee of
+2% per month (compounded monthly), plus all costs of collection including reasonable
+attorney fees.
+
+2.3 PRICE REVIEW: Provider reserves the right to revise subscription fees at any time
+with 30 (thirty) days' written notice to Customer. Customer's continued use of the
+service after the notice period constitutes acceptance of the new pricing.
+
+2.4 All fees are exclusive of taxes. Customer is solely responsible for all applicable
+taxes, duties, and levies including GST, withholding tax, and any cross-border
+transaction taxes.
+
+3. SERVICE LEVELS AND SUPPORT
+
+3.1 Provider guarantees 99.0% monthly uptime for the core DataSync platform. Uptime
+excludes scheduled maintenance windows of up to 8 hours per month and any downtime
+caused by Customer's systems or third-party integrations.
+
+3.2 SLA REVIEW: Uptime performance and support ticket resolution metrics shall be
+reviewed semi-annually. Review meetings to be held on September 1, 2025 and
+March 1, 2026.
+
+3.3 In the event of SLA breach, Customer's sole remedy shall be a service credit of 5%
+of the affected month's quarterly fee (pro-rated). Total credits shall not exceed 10% of
+annual subscription fees. Provider shall not be liable for any indirect, incidental,
+consequential, or punitive damages arising from SLA failures.
+
+3.4 SUPPORT: Provider shall provide email-only support during US business hours
+(9 AM – 6 PM EST, Monday to Friday). Response time targets: P1 critical — 8 business
+hours; P2 high — 3 business days; P3 medium — 10 business days.
+
+4. DATA AND SECURITY
+
+4.1 AUDIT RIGHT: Customer shall have the right to request one (1) security audit per
+calendar year with a minimum of 60 days' written notice. Provider may, at its sole
+discretion, substitute a third-party SOC 2 Type II report in lieu of a direct audit.
+Annual audit window: January 2026.
+
+4.2 DATA PORTABILITY: Upon termination or expiry of this Agreement, Provider shall
+make Customer's data available for export for a period of 30 (thirty) days following
+the termination date. After this 30-day window, Provider shall permanently delete all
+Customer data with no obligation to retain or restore.
+
+4.3 Provider processes Customer data in data centres located in the United States and
+the European Union. Customer acknowledges and consents to cross-border data transfers
+subject to Provider's standard Data Processing Addendum.
+
+5. INTELLECTUAL PROPERTY AND LIABILITY
+
+5.1 All intellectual property rights in the DataSync platform remain exclusively with
+Provider. This Agreement grants Customer a limited, non-exclusive, non-transferable
+licence to access the platform during the subscription term only.
+
+5.2 LIMITATION OF LIABILITY: Provider's aggregate liability to Customer for any and
+all claims arising under or in connection with this Agreement shall not exceed the
+total fees paid by Customer in the 3 (three) months immediately preceding the claim.
+
+5.3 CUSTOMER LIABILITY: Customer's liability to Provider for any breach of this
+Agreement, including unauthorised use, data misuse, or non-payment, shall be
+UNLIMITED and shall include all direct, indirect, consequential, and punitive damages.
+
+5.4 INDEMNIFICATION: Customer shall indemnify, defend, and hold harmless Provider
+from any and all third-party claims arising from Customer's use of the platform,
+Customer's data, or Customer's violation of applicable law, without limitation.
+
+6. CONFIDENTIALITY
+
+6.1 Each party agrees to maintain the confidentiality of the other party's Confidential
+Information for the duration of this Agreement and for a period of 5 (five) years
+following termination.
+
+6.2 POST-TERMINATION DATA RETURN: Customer must notify Provider within 14 (fourteen)
+days of termination whether it requires a data export. Failure to notify within this
+window shall be deemed a waiver of data portability rights.
+
+7. GOVERNING LAW AND DISPUTES
+
+7.1 This Agreement shall be governed by and construed in accordance with the laws of
+the State of Delaware, United States of America, without regard to its conflict of
+law provisions.
+
+7.2 Any dispute arising under this Agreement shall be resolved exclusively by binding
+arbitration administered by the American Arbitration Association in New York, USA.
+Customer waives any right to bring claims in Indian courts or under Indian law.
+
+7.3 NOTICE DEADLINES: All notices under this Agreement must be delivered by email with
+read receipt confirmed. Any claim for service credits or SLA breaches must be submitted
+within 15 days of the end of the affected service month. Claims submitted after this
+deadline shall be deemed waived.
+
+8. INSURANCE
+
+8.1 Each party shall maintain, at its own expense, adequate insurance coverage including
+commercial general liability insurance of not less than USD 2,000,000 per occurrence.
+Customer must provide evidence of coverage to Provider by April 1, 2025 and annually
+thereafter on March 1 of each year.
+
+8.2 Customer shall name Provider as an additional insured on all liability policies.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of March 1, 2025.
+
+Nexus Retail Pvt. Ltd.                    DataSync Technologies Inc.
+By: Rajiv Sharma                          By: Michael Chen
+Title: Managing Director                  Title: Chief Executive Officer
+Date: March 1, 2025                       Date: March 1, 2025
